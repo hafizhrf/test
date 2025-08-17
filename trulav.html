@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Account Deletion Request</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://www.google.com/recaptcha/api.js?render=YOUR_RECAPTCHA_SITE_KEY"></script>
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+    </style>
+</head>
+<body class="min-h-screen gradient-bg flex items-center justify-center p-4">
+    <div class="bg-white rounded-lg shadow-xl p-8 w-full max-w-md">
+        <div class="text-center mb-8">
+            <div class="mx-auto w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-4">
+                <svg class="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                </svg>
+            </div>
+            <h1 class="text-2xl font-bold text-gray-900 mb-2">Delete Account</h1>
+            <p class="text-gray-600">We're sorry to see you go. Please tell us why you're leaving.</p>
+        </div>
+
+        <form id="deletionForm" class="space-y-6">
+            <div>
+                <label for="email" class="block text-sm font-medium text-gray-700 mb-2">
+                    Email Address *
+                </label>
+                <input 
+                    type="email" 
+                    id="email" 
+                    name="email" 
+                    required
+                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    placeholder="Enter your email address"
+                >
+            </div>
+
+            <div>
+                <label for="reason" class="block text-sm font-medium text-gray-700 mb-2">
+                    Reason for leaving (optional)
+                </label>
+                <select 
+                    id="reason" 
+                    name="reason"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent mb-3"
+                >
+                    <option value="">Select a reason...</option>
+                    <option value="Privacy concerns">Privacy concerns</option>
+                    <option value="Not using the service">Not using the service</option>
+                    <option value="Found a better alternative">Found a better alternative</option>
+                    <option value="Too expensive">Too expensive</option>
+                    <option value="Technical issues">Technical issues</option>
+                    <option value="Other">Other</option>
+                </select>
+                
+                <textarea 
+                    id="additionalComments" 
+                    name="additionalComments" 
+                    rows="3"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    placeholder="Additional comments (optional)"
+                ></textarea>
+            </div>
+
+            <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded">
+                <div class="flex">
+                    <div class="flex-shrink-0">
+                        <svg class="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+                        </svg>
+                    </div>
+                    <div class="ml-3">
+                        <p class="text-sm text-yellow-700">
+                            <strong>Important:</strong> Account deletion is permanent and cannot be undone. All your data will be removed from our systems.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex items-center">
+                <input 
+                    id="confirm" 
+                    name="confirm" 
+                    type="checkbox" 
+                    required
+                    class="h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300 rounded"
+                >
+                <label for="confirm" class="ml-2 block text-sm text-gray-900">
+                    I understand that this action is permanent and irreversible
+                </label>
+            </div>
+
+            <!-- reCAPTCHA v3 badge will appear automatically -->
+            <div class="text-xs text-gray-500 text-center">
+                This site is protected by reCAPTCHA and the Google
+                <a href="https://policies.google.com/privacy" class="text-purple-600 hover:underline">Privacy Policy</a> and
+                <a href="https://policies.google.com/terms" class="text-purple-600 hover:underline">Terms of Service</a> apply.
+            </div>
+
+            <button 
+                type="submit" 
+                id="submitBtn"
+                class="w-full bg-red-600 text-white py-2 px-4 rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition duration-200 font-medium"
+            >
+                Submit Deletion Request
+            </button>
+        </form>
+
+        <!-- Success Message -->
+        <div id="successMessage" class="hidden mt-6 p-4 bg-green-50 border border-green-200 rounded-md">
+            <div class="flex">
+                <div class="flex-shrink-0">
+                    <svg class="h-5 w-5 text-green-400" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                    </svg>
+                </div>
+                <div class="ml-3">
+                    <h3 class="text-sm font-medium text-green-800">Request submitted successfully!</h3>
+                    <p class="text-sm text-green-700 mt-1">We'll process your account deletion request within 30 days.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Error Message -->
+        <div id="errorMessage" class="hidden mt-6 p-4 bg-red-50 border border-red-200 rounded-md">
+            <div class="flex">
+                <div class="flex-shrink-0">
+                    <svg class="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+                    </svg>
+                </div>
+                <div class="ml-3">
+                    <h3 class="text-sm font-medium text-red-800">Error submitting request</h3>
+                    <p id="errorText" class="text-sm text-red-700 mt-1">Please try again later.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const SUPABASE_URL = 'https://pxerhwadhawfoepymjof.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB4ZXJod2FkaGF3Zm9lcHltam9mIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTU0MTQ1MDYsImV4cCI6MjA3MDk5MDUwNn0.CSScHv1MYTBs9y61C-sqaK42Imxv20glI1CGvz3AI0w';
+        const RECAPTCHA_SITE_KEY = '6LcjrqgrAAAAALMe6L1PoxSZ1z5APBf0MxGKQ2eL';
+
+        // Check if Supabase is loaded
+        if (typeof window.supabase === 'undefined') {
+            console.error('Supabase library failed to load');
+            document.getElementById('errorMessage').classList.remove('hidden');
+            document.getElementById('errorText').textContent = 'Unable to load required libraries. Please refresh the page.';
+        }
+
+        // Initialize Supabase client with error handling
+        let supabase;
+        try {
+            supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        } catch (error) {
+            console.error('Failed to initialize Supabase:', error);
+        }
+
+        // Minimum score threshold (0.0 = bot, 1.0 = human)
+        const MIN_SCORE = 0.5;
+
+        document.getElementById('deletionForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const submitBtn = document.getElementById('submitBtn');
+            const successMessage = document.getElementById('successMessage');
+            const errorMessage = document.getElementById('errorMessage');
+            const errorText = document.getElementById('errorText');
+            
+            // Reset messages
+            successMessage.classList.add('hidden');
+            errorMessage.classList.add('hidden');
+            
+            // Check if Supabase is initialized
+            if (!supabase) {
+                errorText.textContent = 'Service unavailable. Please check your configuration.';
+                errorMessage.classList.remove('hidden');
+                return;
+            }
+            
+            // Show loading state
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Verifying...';
+            
+            try {
+                // Check if reCAPTCHA is available
+                if (typeof grecaptcha === 'undefined') {
+                    throw new Error('reCAPTCHA service is unavailable. Please refresh the page.');
+                }
+
+                // Execute reCAPTCHA v3
+                const token = await grecaptcha.execute(RECAPTCHA_SITE_KEY, {
+                    action: 'delete_account'
+                });
+
+                if (!token) {
+                    throw new Error('Failed to verify reCAPTCHA. Please try again.');
+                }
+
+                submitBtn.textContent = 'Submitting...';
+
+                // Get form data
+                const formData = new FormData(e.target);
+                const email = formData.get('email');
+                const reason = formData.get('reason');
+                const additionalComments = formData.get('additionalComments');
+                
+                // Combine reason and additional comments
+                let fullReason = reason || '';
+                if (additionalComments) {
+                    fullReason += (fullReason ? '\n\n' : '') + 'Additional comments: ' + additionalComments;
+                }
+                
+                // Insert data into Supabase with reCAPTCHA token
+                const { data, error } = await supabase
+                    .from('deletion_requests')
+                    .insert([
+                        {
+                            email: email,
+                            reason: fullReason || null,
+                            recaptcha_token: token,
+                            recaptcha_action: 'delete_account'
+                        }
+                    ]);
+                
+                if (error) {
+                    throw error;
+                }
+                
+                // Show success message
+                successMessage.classList.remove('hidden');
+                e.target.reset(); // Clear the form
+                formModified = false;
+                
+            } catch (error) {
+                console.error('Error:', error);
+                errorText.textContent = error.message || 'Please try again later.';
+                errorMessage.classList.remove('hidden');
+            } finally {
+                // Reset button
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Submit Deletion Request';
+            }
+        });
+
+        // Show warning when page is about to be closed if form has data
+        let formModified = false;
+        document.getElementById('deletionForm').addEventListener('input', function() {
+            formModified = true;
+        });
+
+        window.addEventListener('beforeunload', function(e) {
+            if (formModified && document.getElementById('successMessage').classList.contains('hidden')) {
+                e.preventDefault();
+                e.returnValue = '';
+            }
+        });
+
+        // Optional: Execute reCAPTCHA on page load to improve UX
+        window.addEventListener('load', function() {
+            if (typeof grecaptcha !== 'undefined') {
+                grecaptcha.ready(function() {
+                    grecaptcha.execute(RECAPTCHA_SITE_KEY, {action: 'page_load'});
+                });
+            }
+        });
+    </script>
+</body>
+</html>
